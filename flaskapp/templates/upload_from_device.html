@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Capture Photo</h1>
+    <video id="camera" autoplay playsinline></video>
+    <button id="captureButton">Capture Photo</button>
+    <button id="uploadButton" style="display: none;">Upload</button>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <img id="capturedImage" style="display: none;" />
+
+    <!-- Add an input field to select the captured image for upload -->
+    <input type="file" id="fileInput" accept="image/*" style="display: none;" />
+
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const captureButton = document.getElementById('captureButton');
+        const uploadButton = document.getElementById('uploadButton');
+        const fileInput = document.getElementById('fileInput');
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
+        }
+
+        startCamera();
+
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            capturedImage.src = canvas.toDataURL('image/png');
+            capturedImage.style.display = 'block';
+            uploadButton.style.display = 'block'; // Display the Upload button
+        });
+
+        // Trigger the file input when the Upload button is clicked
+    uploadButton.addEventListener('click', () => {
+        // Convert the captured image data to a Blob
+        canvas.toBlob((blob) => {
+            // Create a FormData object to send the image data to the server
+            const formData = new FormData();
+            formData.append('image', blob, 'captured_image.png'); // 'image' is the field name
+
+            // Send a POST request to the server with the image data
+            fetch('/upload_from_device', {
+                method: 'POST',
+                body: formData,
+            })
+            .then((response) => response.text())
+            .then((message) => {
+                // Check if the response indicates a successful upload
+                if (message === 'Image uploaded successfully') {
+                    // Redirect to another page after a successful upload
+                    window.location.href = '/my-photos'; // Replace with your target page's URL
+                } else {
+                    // Display an alert message for other responses
+                    alert(message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error uploading image:', error);
+            });
+        }, 'image/png'); // Specify the image format
+    });
+
+
+
+        // // Trigger the file input when the Upload button is clicked
+        // uploadButton.addEventListener('click', () => {
+        //     fileInput.click();
+        // });
+
+        // // Handle file selection in the input field
+        // fileInput.addEventListener('change', () => {
+        //     const selectedFile = fileInput.files[0];
+        //     if (selectedFile) {
+        //         // You can handle the selected file here (e.g., upload it to the server)
+        //         // For now, let's just simulate an alert
+        //         alert('File selected for upload: ' + selectedFile.name);
+        //     }
+        // });
+    </script>
+{% endblock content %}

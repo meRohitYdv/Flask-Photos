@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}    
+{% for photo in uploaded_photos %}
+<article class="media content-section">
+    <div class="media-body">
+      <img class="photo" src="{{url_for('static', filename='photos/' + photo.photo)}}" >
+      <div class="article-title">{{ photo.title }}</div>
+      <div class="article-metadata">
+        <small class="text-muted">{{ photo.date_posted.strftime("%B %d, %Y") }}</small>
+      </div>
+    </div>
+</article>
+{% endfor %}
+{% endblock content %}
