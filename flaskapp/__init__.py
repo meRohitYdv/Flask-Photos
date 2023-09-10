@@ -11,6 +11,8 @@ app.config['SECRET_KEY'] = '987572696e415aee4cba8b012196cd9c'
 app.config['JWT_SECRET_KEY'] = '987572696e415aee4cba8b012196cd9c'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 limiter = Limiter(
